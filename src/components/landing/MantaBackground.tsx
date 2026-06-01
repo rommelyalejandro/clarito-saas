@@ -1,114 +1,202 @@
 'use client';
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
+
+class Particle {
+  x: number;
+  y: number;
+  baseX: number;
+  baseY: number;
+  size: number;
+  color: string;
+  vx: number = 0;
+  vy: number = 0;
+  randomFactor: number;
+
+  constructor(x: number, y: number, canvasWidth: number, canvasHeight: number) {
+    // Start particles scattered around the screen
+    this.x = Math.random() * canvasWidth;
+    this.y = Math.random() * canvasHeight;
+    this.baseX = x;
+    this.baseY = y;
+    this.size = Math.random() * 1.5 + 0.5;
+    this.randomFactor = Math.random() * 0.02 + 0.02; // Spring stiffness variance
+
+    const colors = [
+      'rgba(45, 212, 191, 0.9)',   // Teal
+      'rgba(167, 139, 250, 0.9)',  // Purple
+      'rgba(129, 140, 248, 0.9)',  // Indigo
+      'rgba(255, 255, 255, 0.8)'   // White-ish
+    ];
+    this.color = colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  update(mouse: { x: number; y: number; radius: number }) {
+    let dx = mouse.x - this.x;
+    let dy = mouse.y - this.y;
+    let distance = Math.sqrt(dx * dx + dy * dy);
+
+    // Mouse Repel Force
+    if (distance < mouse.radius) {
+      let forceDirectionX = dx / distance;
+      let forceDirectionY = dy / distance;
+      let maxDistance = mouse.radius;
+      // Exponential force for more dramatic scattering when close
+      let force = Math.pow((maxDistance - distance) / maxDistance, 2);
+      let pushX = forceDirectionX * force * 15;
+      let pushY = forceDirectionY * force * 15;
+
+      this.vx -= pushX;
+      this.vy -= pushY;
+    }
+
+    // Spring Force (returning to base position)
+    let dxBase = this.baseX - this.x;
+    let dyBase = this.baseY - this.y;
+    this.vx += dxBase * this.randomFactor;
+    this.vy += dyBase * this.randomFactor;
+
+    // Friction / Damping
+    this.vx *= 0.88;
+    this.vy *= 0.88;
+
+    this.x += this.vx;
+    this.y += this.vy;
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
 
 export default function MantaBackground() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 });
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+
+    let particlesArray: Particle[] = [];
+    let animationFrameId: number;
+
+    const initCanvas = () => {
+      if (!containerRef.current || !canvas) return;
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      particlesArray = [];
       
-      {/* 1. Magical glowing aura that follows the manta ray */}
-      <motion.div
-        className="absolute top-1/4 left-1/4 w-[60vw] h-[40vw] bg-accent-primary/20 rounded-[100%] blur-[120px]"
-        animate={{
-          x: [0, 100, -50, 0],
-          y: [0, -50, 80, 0],
-          scale: [1, 1.2, 0.9, 1],
-          rotate: [0, 15, -10, 0],
-        }}
-        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+      // Step 1: Draw the Manta Ray SVG onto a temporary canvas to get pixel data
+      const offscreenCanvas = document.createElement('canvas');
+      const offCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
+      if (!offCtx) return;
+
+      offscreenCanvas.width = canvas.width;
+      offscreenCanvas.height = canvas.height;
+
+      // Center and scale the Manta Ray based on screen size
+      const scaleFactor = Math.min(canvas.width, canvas.height) / 180; 
+      
+      offCtx.translate(canvas.width / 2, canvas.height / 2);
+      offCtx.scale(scaleFactor, scaleFactor);
+      
+      // Offset by half of the 100x100 SVG viewbox to perfectly center
+      offCtx.translate(-50, -50);
+
+      // Manta path (Same as Logo 4)
+      const path = new Path2D("M50 10 C 60 40, 90 50, 95 60 C 90 65, 70 70, 50 90 C 30 70, 10 65, 5 60 C 10 50, 40 40, 50 10 Z");
+      offCtx.fillStyle = "white";
+      offCtx.fill(path);
+
+      // Step 2: Read pixel data
+      const imgData = offCtx.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+      const data = imgData.data;
+
+      // The step controls particle density. Lower = more particles.
+      const step = Math.min(canvas.width, canvas.height) < 768 ? 6 : 4; 
+
+      for (let y = 0; y < offscreenCanvas.height; y += step) {
+        for (let x = 0; x < offscreenCanvas.width; x += step) {
+          const index = (y * offscreenCanvas.width + x) * 4;
+          const alpha = data[index + 3];
+
+          if (alpha > 128) {
+            // Include some randomness to base positions to make it look organic
+            let randX = x + (Math.random() - 0.5) * 4;
+            let randY = y + (Math.random() - 0.5) * 4;
+            particlesArray.push(new Particle(randX, randY, canvas.width, canvas.height));
+          }
+        }
+      }
+    };
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Interaction radius based on screen size
+      const interactionRadius = Math.min(canvas.width, canvas.height) * 0.15;
+      
+      for (let i = 0; i < particlesArray.length; i++) {
+        particlesArray[i].update({
+          x: mousePos.x,
+          y: mousePos.y,
+          radius: interactionRadius
+        });
+        particlesArray[i].draw(ctx);
+      }
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    initCanvas();
+    animate();
+
+    const handleResize = () => {
+      initCanvas();
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [mousePos]);
+
+  // Track mouse securely on the window
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+    
+    // Using window listener instead of div listener ensures it catches events even if other things are on top
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
+
+  return (
+    <div 
+      ref={containerRef} 
+      className="absolute inset-0 overflow-hidden pointer-events-none z-0"
+    >
+      {/* Background glow behind the particles */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40vw] h-[40vw] bg-accent-primary/10 rounded-full blur-[120px] pointer-events-none animate-pulse"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[30vw] h-[30vw] bg-status-teal/10 rounded-full blur-[100px] pointer-events-none"></div>
+      
+      <canvas 
+        ref={canvasRef}
+        className="block w-full h-full pointer-events-auto"
+        style={{ touchAction: 'none' }}
       />
-      <motion.div
-        className="absolute top-1/3 right-1/4 w-[40vw] h-[30vw] bg-status-teal/15 rounded-[100%] blur-[100px]"
-        animate={{
-          x: [0, -120, 50, 0],
-          y: [0, 80, -40, 0],
-          scale: [1, 1.3, 0.8, 1],
-        }}
-        transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-      />
-
-      {/* 2. The literal Manta Ray that floats across the screen (Like Gemini Logo) */}
-      <motion.div
-        className="absolute z-10 opacity-60"
-        initial={{ x: '-20vw', y: '80vh', rotate: -15, scale: 0.5 }}
-        animate={{
-          x: ['-20vw', '120vw'],
-          y: ['80vh', '10vh', '40vh', '-20vh'],
-          rotate: [-15, 10, -5, 20],
-          scale: [0.5, 1.2, 0.8, 1.5]
-        }}
-        transition={{
-          duration: 35,
-          repeat: Infinity,
-          ease: "easeInOut",
-          repeatType: "loop"
-        }}
-      >
-        <svg 
-          width="200" height="200" viewBox="0 0 100 100" 
-          fill="none" xmlns="http://www.w3.org/2000/svg"
-          className="drop-shadow-[0_0_30px_rgba(45,212,191,0.8)] animate-pulse"
-        >
-          {/* Manta Ray elegant path */}
-          <path 
-            d="M50 10 C 60 40, 90 50, 95 60 C 90 65, 70 70, 50 90 C 30 70, 10 65, 5 60 C 10 50, 40 40, 50 10 Z" 
-            fill="url(#manta-gradient)"
-            fillOpacity="0.8"
-          />
-          {/* Manta Tail */}
-          <path 
-            d="M50 90 C 50 95, 48 110, 50 120" 
-            stroke="url(#manta-gradient)" 
-            strokeWidth="2" 
-            strokeLinecap="round"
-          />
-          <defs>
-            <linearGradient id="manta-gradient" x1="50" y1="10" x2="50" y2="90" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#818CF8" />
-              <stop offset="0.5" stopColor="#2DD4BF" />
-              <stop offset="1" stopColor="#A78BFA" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </motion.div>
-
-      {/* 3. A second, smaller manta ray swimming in the background */}
-      <motion.div
-        className="absolute z-0 opacity-30"
-        initial={{ x: '120vw', y: '20vh', rotate: 210, scale: 0.3 }}
-        animate={{
-          x: ['120vw', '-20vw'],
-          y: ['20vh', '60vh', '10vh', '80vh'],
-          rotate: [210, 180, 220, 190]
-        }}
-        transition={{
-          duration: 45,
-          repeat: Infinity,
-          ease: "easeInOut",
-          repeatType: "loop",
-          delay: 15
-        }}
-      >
-        <svg 
-          width="120" height="120" viewBox="0 0 100 100" 
-          fill="none" xmlns="http://www.w3.org/2000/svg"
-          className="drop-shadow-[0_0_20px_rgba(167,139,250,0.6)]"
-        >
-          <path 
-            d="M50 10 C 60 40, 90 50, 95 60 C 90 65, 70 70, 50 90 C 30 70, 10 65, 5 60 C 10 50, 40 40, 50 10 Z" 
-            fill="url(#manta-gradient-2)"
-            fillOpacity="0.6"
-          />
-          <defs>
-            <linearGradient id="manta-gradient-2" x1="50" y1="10" x2="50" y2="90" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#A78BFA" />
-              <stop offset="1" stopColor="#2DD4BF" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </motion.div>
-
     </div>
   );
 }
