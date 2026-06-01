@@ -20,8 +20,8 @@ class Particle {
     this.baseX = x;
     this.baseY = y;
     this.size = Math.random() * 1.5 + 0.5;
-    // Lower spring stiffness for a much slower, smoother return
-    this.randomFactor = Math.random() * 0.005 + 0.005; 
+    // Halved spring stiffness for 50% slower return speed
+    this.randomFactor = Math.random() * 0.0025 + 0.0025; 
 
     const colors = [
       'rgba(45, 212, 191, 0.9)',   // Teal
@@ -42,10 +42,10 @@ class Particle {
       let forceDirectionX = dx / distance;
       let forceDirectionY = dy / distance;
       let maxDistance = mouse.radius;
-      // Gentler force so it doesn't scatter violently
+      // Halved repel force for 50% slower reaction
       let force = Math.pow((maxDistance - distance) / maxDistance, 2);
-      let pushX = forceDirectionX * force * 3; // Reduced from 15 to 3
-      let pushY = forceDirectionY * force * 3;
+      let pushX = forceDirectionX * force * 1.5; 
+      let pushY = forceDirectionY * force * 1.5;
 
       this.vx -= pushX;
       this.vy -= pushY;
