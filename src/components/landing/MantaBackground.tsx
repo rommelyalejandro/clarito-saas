@@ -14,13 +14,14 @@ class Particle {
   randomFactor: number;
 
   constructor(x: number, y: number, canvasWidth: number, canvasHeight: number) {
-    // Start particles scattered around the screen
-    this.x = Math.random() * canvasWidth;
-    this.y = Math.random() * canvasHeight;
+    // Start particles near their base position instead of scattered across the whole screen
+    this.x = x + (Math.random() - 0.5) * 20;
+    this.y = y + (Math.random() - 0.5) * 20;
     this.baseX = x;
     this.baseY = y;
     this.size = Math.random() * 1.5 + 0.5;
-    this.randomFactor = Math.random() * 0.02 + 0.02; // Spring stiffness variance
+    // Lower spring stiffness for a much slower, smoother return
+    this.randomFactor = Math.random() * 0.005 + 0.005; 
 
     const colors = [
       'rgba(45, 212, 191, 0.9)',   // Teal
@@ -41,10 +42,10 @@ class Particle {
       let forceDirectionX = dx / distance;
       let forceDirectionY = dy / distance;
       let maxDistance = mouse.radius;
-      // Exponential force for more dramatic scattering when close
+      // Gentler force so it doesn't scatter violently
       let force = Math.pow((maxDistance - distance) / maxDistance, 2);
-      let pushX = forceDirectionX * force * 15;
-      let pushY = forceDirectionY * force * 15;
+      let pushX = forceDirectionX * force * 3; // Reduced from 15 to 3
+      let pushY = forceDirectionY * force * 3;
 
       this.vx -= pushX;
       this.vy -= pushY;
@@ -56,9 +57,9 @@ class Particle {
     this.vx += dxBase * this.randomFactor;
     this.vy += dyBase * this.randomFactor;
 
-    // Friction / Damping
-    this.vx *= 0.88;
-    this.vy *= 0.88;
+    // Friction / Damping - make it floatier and smoother
+    this.vx *= 0.92;
+    this.vy *= 0.92;
 
     this.x += this.vx;
     this.y += this.vy;
