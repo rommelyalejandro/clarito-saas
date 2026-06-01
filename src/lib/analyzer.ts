@@ -223,7 +223,7 @@ export function runAnalysis(prevRows: SubstackRow[], actRows: SubstackRow[]): An
   });
 
   // Calculate days difference
-  const getLastDate = (rows: SubstackRow[]) => {
+  const getLastDate = (rows: SubstackRow[]): Date | null => {
     let latest: Date | null = null;
     rows.forEach(r => {
       const sd = r['Start date'];
