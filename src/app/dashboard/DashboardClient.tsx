@@ -8,6 +8,7 @@ import ChurnView from '@/components/views/ChurnView';
 import GrowthView from '@/components/views/GrowthView';
 import SourcesView from '@/components/views/SourcesView';
 import { Save, Clock } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 function DashboardContent() {
   const { analysis, prevName, actName, prevRows, actRows, saveReport, isSaving, history, loadFromHistory } = useDashboard();
@@ -19,6 +20,15 @@ function DashboardContent() {
       setCurrentTab('overview');
     }
   }, [analysis]);
+
+  const tabs = [
+    { id: 'upload', label: '📂 Cargar' },
+    { id: 'overview', label: 'Vista General' },
+    { id: 'churn', label: '🔴 Deserción' },
+    { id: 'growth', label: '📈 Crecimiento' },
+    { id: 'sources', label: '📣 Fuentes' },
+    { id: 'history', label: '⏳ Historial' }
+  ];
 
   return (
     <div className="pb-24">
@@ -54,82 +64,102 @@ function DashboardContent() {
           )}
         </div>
 
-        {/* Right Side: Tabs */}
-        <div className="glass-panel p-1 flex gap-1 rounded-xl">
-          {[
-            { id: 'upload', label: '📂 Cargar' },
-            { id: 'overview', label: 'Vista General' },
-            { id: 'churn', label: '🔴 Deserción' },
-            { id: 'growth', label: '📈 Crecimiento' },
-            { id: 'sources', label: '📣 Fuentes' },
-            { id: 'history', label: '⏳ Historial' }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setCurrentTab(tab.id as any)}
-              disabled={(tab.id !== 'upload' && tab.id !== 'history') && !analysis}
-              className={`px-4 py-2 rounded-lg text-[11px] font-mono transition-all duration-300
-                ${currentTab === tab.id 
-                  ? 'bg-accent-primary text-white shadow-lg shadow-accent-primary/20 font-bold' 
-                  : 'text-text-soft hover:text-text-ink hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed'}`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* Right Side: Tabs (Linear/Vercel style) */}
+        <div className="glass-panel p-1 flex gap-1 rounded-xl relative">
+          {tabs.map(tab => {
+            const isActive = currentTab === tab.id;
+            const isDisabled = (tab.id !== 'upload' && tab.id !== 'history') && !analysis;
+            
+            return (
+              <button
+                key={tab.id}
+                onClick={() => !isDisabled && setCurrentTab(tab.id as any)}
+                disabled={isDisabled}
+                className={`relative px-4 py-2 rounded-lg text-[11px] font-mono transition-colors duration-300 z-10
+                  ${isActive ? 'text-white font-bold' : 'text-text-soft hover:text-text-ink disabled:opacity-30 disabled:cursor-not-allowed'}`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTabIndicator"
+                    className="absolute inset-0 bg-accent-primary shadow-[0_0_15px_rgba(129,140,248,0.4)] rounded-lg -z-10"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-20">{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-[1600px] mx-auto mt-6 px-6 relative z-10">
-        {currentTab === 'upload' && (
-          <UploadZone onAnalyze={() => {
-            if (prevRows.length && actRows.length && !analysis) {
-               // Analysis is auto-triggered via useMemo
-            }
-            if (analysis) setCurrentTab('overview');
-          }} />
-        )}
-        
-        {currentTab === 'history' && (
-          <div className="glass-panel p-8 rounded-2xl max-w-4xl mx-auto mt-10">
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2"><Clock className="w-5 h-5 text-accent-primary" /> Tu Historial de Análisis</h2>
-            {history.length === 0 ? (
-              <p className="text-text-soft">Aún no has guardado ningún reporte.</p>
-            ) : (
-              <div className="space-y-4">
-                {history.map((h) => (
-                  <div key={h.id} className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
-                    <div>
-                      <div className="font-bold text-sm mb-1">{h.prevName} <span className="text-text-muted mx-2">vs</span> {h.actName}</div>
-                      <div className="text-xs text-text-muted font-mono">{h.createdAt?.toDate ? h.createdAt.toDate().toLocaleString() : 'Reciente'}</div>
-                    </div>
-                    <button 
-                      onClick={() => {
-                        loadFromHistory(h);
-                        setCurrentTab('overview');
-                      }}
-                      className="px-4 py-2 bg-accent-primary/20 text-accent-primary hover:bg-accent-primary/40 font-bold text-xs rounded-lg transition-colors"
-                    >
-                      Cargar Reporte
-                    </button>
+      <div className="max-w-[1600px] mx-auto mt-6 px-6 relative z-10 min-h-[600px]">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentTab}
+            initial={{ opacity: 0, y: 15, filter: 'blur(4px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -15, filter: 'blur(4px)' }}
+            transition={{ duration: 0.3, type: "spring", bounce: 0 }}
+          >
+            {currentTab === 'upload' && (
+              <UploadZone onAnalyze={() => {
+                if (prevRows.length && actRows.length && !analysis) {
+                   // Analysis is auto-triggered via useMemo
+                }
+                if (analysis) setCurrentTab('overview');
+              }} />
+            )}
+            
+            {currentTab === 'history' && (
+              <div className="glass-panel p-8 rounded-2xl max-w-4xl mx-auto mt-10 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-accent-primary/10 rounded-full blur-3xl"></div>
+                <h2 className="text-xl font-bold mb-6 flex items-center gap-2"><Clock className="w-5 h-5 text-accent-primary" /> Tu Historial de Análisis</h2>
+                {history.length === 0 ? (
+                  <p className="text-text-soft">Aún no has guardado ningún reporte.</p>
+                ) : (
+                  <div className="space-y-4 relative z-10">
+                    {history.map((h, i) => (
+                      <motion.div 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        key={h.id} 
+                        className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors group"
+                      >
+                        <div>
+                          <div className="font-bold text-sm mb-1">{h.prevName} <span className="text-text-muted mx-2">vs</span> {h.actName}</div>
+                          <div className="text-xs text-text-muted font-mono">{h.createdAt?.toDate ? h.createdAt.toDate().toLocaleString() : 'Reciente'}</div>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            loadFromHistory(h);
+                            setCurrentTab('overview');
+                          }}
+                          className="px-4 py-2 bg-accent-primary/20 text-accent-primary group-hover:bg-accent-primary group-hover:text-white font-bold text-xs rounded-lg transition-colors shadow-lg"
+                        >
+                          Cargar Reporte
+                        </button>
+                      </motion.div>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
             )}
-          </div>
-        )}
 
-        {currentTab === 'overview' && analysis && <OverviewView />}
-        {currentTab === 'churn' && analysis && <ChurnView />}
-        {currentTab === 'growth' && analysis && <GrowthView />}
-        {currentTab === 'sources' && analysis && <SourcesView />}
-        
-        {!analysis && currentTab !== 'upload' && (
-          <div className="text-center py-20 text-text-muted">
-            <h3 className="font-sans text-xl font-bold text-text-soft mb-2">Primero carga los dos archivos</h3>
-            <p>Ve a la pestaña Cargar para subir el período anterior y el actual.</p>
-          </div>
-        )}
+            {currentTab === 'overview' && analysis && <OverviewView />}
+            {currentTab === 'churn' && analysis && <ChurnView />}
+            {currentTab === 'growth' && analysis && <GrowthView />}
+            {currentTab === 'sources' && analysis && <SourcesView />}
+            
+            {!analysis && currentTab !== 'upload' && currentTab !== 'history' && (
+              <div className="text-center py-20 text-text-muted">
+                <h3 className="font-sans text-xl font-bold text-text-soft mb-2">Primero carga los dos archivos</h3>
+                <p>Ve a la pestaña Cargar para subir el período anterior y el actual.</p>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
       
       {/* Footer */}
