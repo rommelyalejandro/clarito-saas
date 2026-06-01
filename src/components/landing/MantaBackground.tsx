@@ -187,7 +187,11 @@ export default function MantaBackground() {
   return (
     <div 
       ref={containerRef} 
-      className="absolute inset-0 overflow-hidden pointer-events-none z-0"
+      className="absolute top-0 left-0 w-full h-screen overflow-hidden pointer-events-none z-0"
+      style={{ 
+        maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)', 
+        WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)' 
+      }}
     >
       {/* Background glow behind the particles */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40vw] h-[40vw] bg-accent-primary/10 rounded-full blur-[120px] pointer-events-none animate-pulse"></div>
