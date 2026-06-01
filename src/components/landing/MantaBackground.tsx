@@ -102,8 +102,8 @@ export default function MantaBackground() {
       offscreenCanvas.width = canvas.width;
       offscreenCanvas.height = canvas.height;
 
-      // Center and scale the Manta Ray based on screen size
-      const scaleFactor = Math.min(canvas.width, canvas.height) / 180; 
+      // Center and scale the Manta Ray based on screen size (doubled size)
+      const scaleFactor = Math.min(canvas.width, canvas.height) / 90; 
       
       offCtx.translate(canvas.width / 2, canvas.height / 2);
       offCtx.scale(scaleFactor, scaleFactor);
