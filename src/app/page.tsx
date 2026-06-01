@@ -2,10 +2,15 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Navbar from '@/components/Navbar';
+import HeroSection from '@/components/landing/HeroSection';
+import FeaturesSection from '@/components/landing/FeaturesSection';
+import PricingSection from '@/components/landing/PricingSection';
+import FlockingBackground from '@/components/landing/FlockingBackground';
+import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { motion, Variants } from 'framer-motion';
+import { Variants } from 'framer-motion';
 import { ArrowRight, Activity, Target, Zap, Shield, Sparkles, CheckCircle2, ChevronRight } from 'lucide-react';
-import MantaBackground from '@/components/landing/MantaBackground';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -29,8 +34,8 @@ export default function LandingPage() {
       
       {/* Background Effects */}
       <div className="absolute inset-0 bg-grid-matrix opacity-[0.03] pointer-events-none z-0"></div>
-      <div className="absolute inset-0 premium-noise z-50"></div>
-      <MantaBackground />
+      <div className="absolute inset-0 premium-noise z-50 pointer-events-none"></div>
+      <FlockingBackground />
       
       <div className="max-w-[1200px] mx-auto px-6 pt-32 pb-24 relative z-10">
         
