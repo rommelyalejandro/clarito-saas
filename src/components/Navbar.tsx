@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 
 export default function Navbar() {
@@ -10,7 +11,8 @@ export default function Navbar() {
   return (
     <header className="glass-surface flex justify-between items-center py-4 px-8 sticky top-0 z-50 border-b border-border-color/50">
       <div className="flex items-center gap-2">
-        <Link href="/" className="font-sans font-extrabold text-xl text-text-ink tracking-tight flex items-center gap-2 group">
+        <Link href="/" className="font-sans font-extrabold text-xl text-text-ink tracking-tight flex items-center gap-3 group">
+          <Image src="/logo.png" alt="Clarito Logo" width={28} height={28} className="rounded-lg object-contain group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(45,212,191,0.5)]" />
           <span className="bg-gradient-to-r from-accent-primary to-status-teal bg-clip-text text-transparent group-hover:opacity-80 transition-opacity">Clarito</span>
           <span className="text-xs font-mono text-text-muted bg-white/5 px-2 py-0.5 rounded-full border border-white/5">beta</span>
         </Link>
