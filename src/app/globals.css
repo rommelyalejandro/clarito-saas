@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-main: #050505;
+  --color-bg-surface: rgba(18, 21, 28, 0.4);
+  --color-bg-card: rgba(24, 28, 40, 0.45);
+  --color-border-color: rgba(255, 255, 255, 0.08);
+  --color-text-ink: #f8fafc;
+  --color-text-muted: #64748b;
+  --color-text-soft: #94a3b8;
+  
+  --color-accent-primary: #818cf8;
+  --color-accent-secondary: #f472b6;
+  
+  --color-status-green: #34d399;
+  --color-status-red: #fb7185;
+  --color-status-yellow: #fbbf24;
+  --color-status-purple: #c084fc;
+  --color-status-teal: #2dd4bf;
+  --color-status-pink: #f472b6;
+  
+  --color-col-prev: #818cf8;
+  --color-col-act: #2dd4bf;
+  --color-col-prev-bg: rgba(129, 140, 248, 0.1);
+  --color-col-act-bg: rgba(45, 212, 191, 0.1);
+  
+  --color-churn: #fb7185;
+  --color-churn-bg: rgba(251, 113, 133, 0.1);
+  
+  --font-mono: "DM Mono", monospace;
+  --font-sans: "DM Sans", sans-serif;
+}
+
+:root {
+  background-color: var(--color-bg-main);
+  color: var(--color-text-ink);
+}
+
+body {
+  font-family: var(--font-mono);
+  overflow-x: hidden;
+  background-color: var(--color-bg-main);
+}
+
+/* Background Aurora effect elements */
+.aurora-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
+  background-color: #050505;
+}
+
+.aurora-orb-1 {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 50vw;
+  height: 50vw;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.15) 0%, rgba(129, 140, 248, 0) 70%);
+  filter: blur(80px);
+}
+
+.aurora-orb-2 {
+  position: absolute;
+  bottom: -20%;
+  right: -10%;
+  width: 60vw;
+  height: 60vw;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.12) 0%, rgba(45, 212, 191, 0) 70%);
+  filter: blur(100px);
+}
+
+.aurora-orb-3 {
+  position: absolute;
+  top: 40%;
+  left: 30%;
+  width: 40vw;
+  height: 40vw;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(244, 114, 182, 0.08) 0%, rgba(244, 114, 182, 0) 70%);
+  filter: blur(120px);
+}
+
+/* Base custom styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Glassmorphism utilities */
+.glass-panel {
+  background: var(--color-bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border-color);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+.glass-surface {
+  background: var(--color-bg-surface);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--color-border-color);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.glass-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+.glass-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Typography components */
+.text-sec-header {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--color-text-soft);
+}
