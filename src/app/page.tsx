@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
-import MantaBackground from '@/components/landing/MantaBackground';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { Variants } from 'framer-motion';
@@ -32,7 +31,6 @@ export default function LandingPage() {
       {/* Background Effects */}
       <div className="absolute inset-0 bg-grid-matrix opacity-[0.03] pointer-events-none z-0"></div>
       <div className="absolute inset-0 premium-noise z-50 pointer-events-none"></div>
-      <MantaBackground />
       
       <div className="max-w-[1200px] mx-auto px-6 pt-32 pb-24 relative z-10">
         
