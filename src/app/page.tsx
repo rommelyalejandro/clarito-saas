@@ -3,9 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
-import HeroSection from '@/components/landing/HeroSection';
-import FeaturesSection from '@/components/landing/FeaturesSection';
-import PricingSection from '@/components/landing/PricingSection';
 import FlockingBackground from '@/components/landing/FlockingBackground';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
