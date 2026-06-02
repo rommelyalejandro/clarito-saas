@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Navbar from '@/components/Navbar';
 import { Target, TrendingUp, Users, Activity, BarChart4, ArrowRight, ShieldCheck, Globe, Star } from 'lucide-react';
 import { motion, Variants } from 'framer-motion';
 
@@ -22,7 +21,6 @@ const itemVariants: Variants = {
 export default function AuditoriaSubstackPage() {
   return (
     <div className="min-h-screen bg-bg-main relative overflow-hidden font-sans">
-      <Navbar />
 
       {/* Background Effects */}
       <div className="absolute inset-0 bg-grid-matrix opacity-[0.03] pointer-events-none z-0"></div>
@@ -58,7 +56,7 @@ export default function AuditoriaSubstackPage() {
             <Link href="/login" className="px-8 py-4 bg-white text-black font-bold rounded-xl transition-transform hover:scale-105 flex items-center gap-2 shadow-[0_0_30px_rgba(255,255,255,0.2)] w-full sm:w-auto justify-center">
               Comenzar Totalmente Gratis <ArrowRight className="w-5 h-5" />
             </Link>
-            <Link href="/pricing" className="px-8 py-4 glass-btn text-white font-bold rounded-xl border border-white/10 hover:bg-white/5 transition-colors w-full sm:w-auto justify-center flex">
+            <Link href="/precios" className="px-8 py-4 glass-btn text-white font-bold rounded-xl border border-white/10 hover:bg-white/5 transition-colors w-full sm:w-auto justify-center flex">
               Ver Precios
             </Link>
           </motion.div>

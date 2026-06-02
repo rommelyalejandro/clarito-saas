@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Navbar from '@/components/Navbar';
 import { CheckCircle2, Zap, Shield, Sparkles, Infinity, X } from 'lucide-react';
 import { motion, Variants } from 'framer-motion';
 
@@ -22,7 +21,6 @@ const itemVariants: Variants = {
 export default function PricingPage() {
   return (
     <div className="min-h-screen bg-bg-main relative overflow-hidden font-sans">
-      <Navbar />
 
       {/* Background Effects */}
       <div className="absolute inset-0 bg-grid-matrix opacity-[0.03] pointer-events-none z-0"></div>
