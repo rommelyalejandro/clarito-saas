@@ -95,7 +95,7 @@ export default function AdminPage() {
         <motion.div variants={itemVariants} className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-status-red/10 border border-status-red/20 text-status-red text-[10px] font-mono font-bold rounded-full mb-4">
-              <ShieldAlert className="w-3 h-3" /> ACCESO RESTRINGIDO LEVEL 5
+              <ShieldAlert className="w-3 h-3" /> NIVEL MÁXIMO DE ACCESO (ROOT)
             </div>
             <h1 className="text-4xl md:text-5xl font-sans font-black text-white mb-2 tracking-tight">Centro de Control</h1>
             <p className="text-text-soft font-mono text-sm">Vista global del sistema y usuarios de Clarito.</p>

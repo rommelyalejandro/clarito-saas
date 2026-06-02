@@ -4,8 +4,9 @@ import React, { createContext, useContext, useState, useMemo, ReactNode, useEffe
 import Papa from 'papaparse';
 import { SubstackRow, AnalysisResult, runAnalysis } from '@/lib/analyzer';
 import { useAuth } from './AuthContext';
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { collection, addDoc, getDocs, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 interface HistoryItem {
   id: string;
@@ -40,6 +41,8 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const [actRows, setActRows] = useState<SubstackRow[]>([]);
   const [prevName, setPrevName] = useState<string>('');
   const [actName, setActName] = useState<string>('');
+  const [prevFileObj, setPrevFileObj] = useState<File | null>(null);
+  const [actFileObj, setActFileObj] = useState<File | null>(null);
   const [loadedAnalysis, setLoadedAnalysis] = useState<AnalysisResult | null>(null);
 
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -72,6 +75,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         const validRows = results.data.filter(r => !!r.Email);
         setPrevRows(validRows);
         setPrevName(file.name);
+        setPrevFileObj(file);
         setLoadedAnalysis(null); // Clear loaded historical analysis if uploading new files
       }
     });
@@ -85,6 +89,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         const validRows = results.data.filter(r => !!r.Email);
         setActRows(validRows);
         setActName(file.name);
+        setActFileObj(file);
         setLoadedAnalysis(null);
       }
     });
@@ -93,11 +98,13 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const resetPrevFile = () => {
     setPrevRows([]);
     setPrevName('');
+    setPrevFileObj(null);
   };
 
   const resetActFile = () => {
     setActRows([]);
     setActName('');
+    setActFileObj(null);
   };
 
   // Live computation if files exist
@@ -130,9 +137,27 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         retainedEmailsLength: retainedEmails.length,
       };
 
+      // Upload files to Firebase Storage if they exist (live upload)
+      let prevFileUrl = '';
+      let actFileUrl = '';
+      
+      if (prevFileObj) {
+        const prevRef = ref(storage, `users/${user.uid}/csvs/${Date.now()}_prev_${prevFileObj.name}`);
+        await uploadBytes(prevRef, prevFileObj);
+        prevFileUrl = await getDownloadURL(prevRef);
+      }
+      
+      if (actFileObj) {
+        const actRef = ref(storage, `users/${user.uid}/csvs/${Date.now()}_act_${actFileObj.name}`);
+        await uploadBytes(actRef, actFileObj);
+        actFileUrl = await getDownloadURL(actRef);
+      }
+
       const newDoc = {
         prevName,
         actName,
+        prevFileUrl,
+        actFileUrl,
         analysis: payloadToSave,
         createdAt: serverTimestamp()
       };
@@ -169,6 +194,8 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     // Clear live files
     setPrevRows([]);
     setActRows([]);
+    setPrevFileObj(null);
+    setActFileObj(null);
   };
 
   return (
