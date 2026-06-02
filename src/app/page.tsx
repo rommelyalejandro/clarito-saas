@@ -62,9 +62,9 @@ export default function LandingPage() {
               <div className="absolute inset-0 bg-gradient-to-r from-accent-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
               Empezar ahora <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <a href="#bento" className="px-8 py-4 glass-btn text-white font-bold rounded-2xl transition-all text-lg w-full sm:w-auto flex items-center justify-center">
-              Explorar funciones
-            </a>
+            <Link href="/servicios/auditoria-substack" className="px-8 py-4 glass-btn text-white font-bold rounded-2xl transition-all text-lg w-full sm:w-auto flex items-center justify-center">
+              Ver Auditoría Substack
+            </Link>
           </motion.div>
         </motion.div>
 
@@ -194,44 +194,6 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* PRICING */}
-        <div className="mb-40 max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-sans font-bold mb-4">Inversión Transparente</h2>
-            <p className="text-text-soft text-lg max-w-2xl mx-auto">Un precio simple. Sin sorpresas.</p>
-          </div>
-          <div className="glass-panel rounded-[40px] p-1 flex flex-col md:flex-row overflow-hidden border border-white/10 relative">
-            <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-accent-primary/10 to-transparent blur-2xl z-0"></div>
-            <div className="p-12 md:w-1/2 flex flex-col justify-center relative z-10">
-              <h3 className="text-3xl font-bold mb-2">Pase Vitalicio</h3>
-              <p className="text-text-soft mb-8">Acceso a todas las herramientas actuales y futuras para siempre.</p>
-              <div className="flex items-baseline gap-2 mb-8">
-                <span className="text-5xl font-black">$49</span>
-                <span className="text-text-muted">/ único pago</span>
-              </div>
-              <Link href="/login" className="w-full py-4 rounded-xl bg-white text-black font-bold text-center hover:bg-gray-200 transition-colors shadow-lg">
-                Comprar Ahora
-              </Link>
-            </div>
-            <div className="p-12 md:w-1/2 bg-white/5 border-l border-white/5 relative z-10">
-              <p className="font-bold mb-6 text-lg">Todo Incluido:</p>
-              <ul className="space-y-4">
-                {[
-                  "Análisis de cohortes y deserción",
-                  "Proyecciones de MRR y Run Rate",
-                  "Privacidad Local-First en navegador",
-                  "Actualizaciones semanales",
-                  "Soporte prioritario"
-                ].map((f, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-status-green shrink-0 mt-0.5" />
-                    <span className="text-text-soft">{f}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
 
         {/* FOOTER CTA */}
         <motion.div 

@@ -20,6 +20,7 @@ export default function Navbar() {
       
       <nav className="flex items-center gap-6">
         <Link href="/" className="text-text-soft hover:text-accent-primary transition-colors text-sm font-medium hidden md:block">Inicio</Link>
+        <Link href="/servicios/auditoria-substack" className="text-text-soft hover:text-accent-primary transition-colors text-sm font-medium hidden md:block">Servicios</Link>
         <Link href="/precios" className="text-text-soft hover:text-accent-primary transition-colors text-sm font-medium hidden md:block">Precios</Link>
         
         {loading ? (
