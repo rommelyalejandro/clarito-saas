@@ -36,9 +36,9 @@ export default function UploadZone({ onAnalyze }: { onAnalyze: () => void }) {
   };
 
   return (
-    <div className="max-w-[1100px] mx-auto mt-10 px-6">
-      <div className="flex items-center justify-center gap-4 mb-8">
-        <div className={`flex items-center gap-2 text-xs ${prevRows.length > 0 ? 'text-status-green' : 'text-accent-primary'}`}>
+    <div className="max-w-[1100px] mx-auto mt-10 px-4 md:px-6">
+      <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4 mb-8">
+        <div className={`flex items-center gap-2 text-[10px] md:text-xs ${prevRows.length > 0 ? 'text-status-green' : 'text-accent-primary'}`}>
           <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold border-2 ${prevRows.length > 0 ? 'bg-status-green border-status-green text-black' : 'bg-accent-primary border-accent-primary text-white'}`}>1</div>
           <span>Período Anterior</span>
         </div>

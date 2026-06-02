@@ -58,7 +58,7 @@ export default function AdminPage() {
             setTotalAnalyses(analysesSnap.size);
             
             // Sort in memory to avoid needing a new composite index immediately
-            const reportsList = analysesSnap.docs.map(d => ({ id: d.id, refPath: d.ref.path, ...d.data() }));
+            const reportsList = analysesSnap.docs.map(d => ({ id: d.id, refPath: d.ref.path, ...d.data() } as any));
             reportsList.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
             setRecentReports(reportsList.slice(0, 20));
           } catch (e) {
