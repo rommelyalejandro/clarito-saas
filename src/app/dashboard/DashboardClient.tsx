@@ -33,31 +33,31 @@ function DashboardContent() {
   return (
     <div className="pb-24">
       {/* Header Info & Tabs */}
-      <div className="glass-surface sticky top-[68px] z-40 py-3 px-10 flex flex-wrap gap-4 items-center justify-between shadow-xl shadow-black/20">
+      <div className="glass-surface sticky top-[68px] z-40 py-3 px-4 md:px-10 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between shadow-xl shadow-black/20 overflow-hidden">
         
         {/* Left Side: Badge and Dates */}
-        <div className="flex items-center gap-6">
-          <div className="glass-panel px-3 py-1 rounded-full text-[10px] text-text-soft font-mono tracking-wider flex items-center gap-2">
+        <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6 w-full md:w-auto">
+          <div className="glass-panel px-3 py-1 rounded-full text-[10px] text-text-soft font-mono tracking-wider flex items-center justify-center gap-2 self-start md:self-auto">
             {analysis 
               ? <>{analysis.actStats.n} act · {analysis.prevStats.n} prev · {analysis.churnedEmails?.length || analysis.churnRate} desertores</>
               : 'Sin datos'}
           </div>
           
           {analysis && analysis.diffDays > 0 && (
-            <div className="flex items-center gap-3 text-[10px] font-mono">
-              <div className="text-col-prev"><span className="text-text-muted uppercase text-[9px] mr-1">Anterior:</span>{prevName}</div>
-              <div className="w-px h-3 bg-border-color"></div>
-              <div className="text-col-act"><span className="text-text-muted uppercase text-[9px] mr-1">Actual:</span>{actName}</div>
-              <div className="w-px h-3 bg-border-color"></div>
+            <div className="flex flex-wrap items-center gap-2 md:gap-3 text-[10px] font-mono">
+              <div className="text-col-prev"><span className="text-text-muted uppercase text-[9px] mr-1 hidden sm:inline">Anterior:</span>{prevName.substring(0,15)}</div>
+              <div className="w-px h-3 bg-border-color hidden sm:block"></div>
+              <div className="text-col-act"><span className="text-text-muted uppercase text-[9px] mr-1 hidden sm:inline">Actual:</span>{actName.substring(0,15)}</div>
+              <div className="w-px h-3 bg-border-color hidden sm:block"></div>
               <div className="text-status-yellow font-bold"><span className="text-text-muted uppercase text-[9px] mr-1">Días:</span>{analysis.diffDays}</div>
               
               {prevRows.length > 0 && (
                 <button 
                   onClick={saveReport} 
                   disabled={isSaving}
-                  className="ml-4 flex items-center gap-1 bg-status-teal/20 hover:bg-status-teal/40 text-status-teal px-3 py-1 rounded border border-status-teal/30 transition-colors"
+                  className="md:ml-4 flex items-center gap-1 bg-status-teal/20 hover:bg-status-teal/40 text-status-teal px-3 py-1 rounded border border-status-teal/30 transition-colors"
                 >
-                  <Save className="w-3 h-3" /> {isSaving ? 'Guardando...' : 'Guardar Reporte'}
+                  <Save className="w-3 h-3" /> <span className="hidden sm:inline">{isSaving ? 'Guardando...' : 'Guardar Reporte'}</span><span className="sm:hidden">Guardar</span>
                 </button>
               )}
             </div>
@@ -65,7 +65,7 @@ function DashboardContent() {
         </div>
 
         {/* Right Side: Tabs (Linear/Vercel style) */}
-        <div className="glass-panel p-1 flex gap-1 rounded-xl relative">
+        <div className="glass-panel p-1 flex gap-1 rounded-xl relative overflow-x-auto w-full md:w-auto scrollbar-hide">
           {tabs.map(tab => {
             const isActive = currentTab === tab.id;
             const isDisabled = (tab.id !== 'upload' && tab.id !== 'history') && !analysis;
@@ -93,7 +93,7 @@ function DashboardContent() {
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-[1600px] mx-auto mt-6 px-6 relative z-10 min-h-[600px]">
+      <div className="max-w-[1600px] mx-auto mt-6 px-4 md:px-6 relative z-10 min-h-[600px] overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentTab}

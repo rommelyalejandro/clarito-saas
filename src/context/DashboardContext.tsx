@@ -158,6 +158,8 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         actName,
         prevFileUrl,
         actFileUrl,
+        userId: user.uid,
+        userEmail: user.email,
         analysis: payloadToSave,
         createdAt: serverTimestamp()
       };

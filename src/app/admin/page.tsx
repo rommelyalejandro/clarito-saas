@@ -3,9 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { collection, getDocs, query, orderBy, limit, collectionGroup } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { Users, Activity, FileText, Database, ShieldAlert, Cpu } from 'lucide-react';
+import { collection, getDocs, query, orderBy, limit, collectionGroup, doc, deleteDoc } from 'firebase/firestore';
+import { ref, deleteObject } from 'firebase/storage';
+import { db, storage } from '@/lib/firebase';
+import { Users, Activity, FileText, Database, ShieldAlert, Cpu, Trash2, Download } from 'lucide-react';
 import { motion, Variants } from 'framer-motion';
 
 const containerVariants: Variants = {
@@ -28,6 +29,8 @@ export default function AdminPage() {
   const [usersCount, setUsersCount] = useState(0);
   const [totalAnalyses, setTotalAnalyses] = useState(0);
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
+  const [recentReports, setRecentReports] = useState<any[]>([]);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   useEffect(() => {
@@ -53,9 +56,15 @@ export default function AdminPage() {
           try {
             const analysesSnap = await getDocs(collectionGroup(db, 'analyses'));
             setTotalAnalyses(analysesSnap.size);
+            
+            // Sort in memory to avoid needing a new composite index immediately
+            const reportsList = analysesSnap.docs.map(d => ({ id: d.id, refPath: d.ref.path, ...d.data() }));
+            reportsList.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+            setRecentReports(reportsList.slice(0, 20));
           } catch (e) {
-            console.log("CollectionGroup requires index or failed, falling back to mock");
+            console.log("CollectionGroup error, falling back to mock");
             setTotalAnalyses(Math.floor(Math.random() * 50) + 10);
+            setRecentReports([]);
           }
 
         } catch (error) {
@@ -70,6 +79,33 @@ export default function AdminPage() {
       fetchAdminData();
     }
   }, [role]);
+
+  const handleDeleteReport = async (reportId: string, refPath: string, prevFileUrl?: string, actFileUrl?: string) => {
+    if (!confirm('¿Seguro que deseas eliminar este reporte y sus CSVs para liberar espacio en la nube?')) return;
+    
+    setIsDeleting(reportId);
+    try {
+      // 1. Delete files from Storage if they exist
+      if (prevFileUrl) {
+        try { await deleteObject(ref(storage, prevFileUrl)); } catch(e) { console.error('Error deleting prev', e); }
+      }
+      if (actFileUrl) {
+        try { await deleteObject(ref(storage, actFileUrl)); } catch(e) { console.error('Error deleting act', e); }
+      }
+      
+      // 2. Delete document from Firestore
+      await deleteDoc(doc(db, refPath));
+      
+      // Update UI
+      setRecentReports(prev => prev.filter(r => r.id !== reportId));
+      setTotalAnalyses(prev => prev - 1);
+    } catch (error) {
+      console.error("Error al eliminar", error);
+      alert("Hubo un error al intentar eliminar el reporte.");
+    } finally {
+      setIsDeleting(null);
+    }
+  };
 
   if (loading || role !== 'admin') return (
     <div className="min-h-screen flex items-center justify-center">
@@ -190,6 +226,84 @@ export default function AdminPage() {
                       </td>
                       <td className="px-8 py-5 font-mono text-text-muted text-xs">
                         {u.createdAt ? new Date(u.createdAt).toLocaleString() : 'N/A'}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+
+        {/* REPORTS TABLE */}
+        <motion.div variants={itemVariants} className="glass-panel rounded-3xl overflow-hidden border border-white/5 mt-10">
+          <div className="p-6 border-b border-white/5 flex items-center justify-between bg-black/20">
+            <h2 className="text-xl font-bold font-sans flex items-center gap-2">
+              <Database className="w-5 h-5 text-status-purple" /> Archivos Subidos por Usuarios (Base de Datos)
+            </h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-black/40 text-[10px] uppercase text-text-muted font-mono tracking-wider">
+                <tr>
+                  <th className="px-8 py-5">Archivo Anterior</th>
+                  <th className="px-8 py-5">Archivo Actual</th>
+                  <th className="px-8 py-5">Subido Por</th>
+                  <th className="px-8 py-5">Fecha</th>
+                  <th className="px-8 py-5 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm divide-y divide-white/5">
+                {isLoadingData ? (
+                  <tr>
+                    <td colSpan={5} className="px-8 py-12 text-center text-text-muted">Cargando reportes...</td>
+                  </tr>
+                ) : recentReports.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-8 py-12 text-center text-text-muted">No hay reportes guardados en la base de datos.</td>
+                  </tr>
+                ) : (
+                  recentReports.map((r) => (
+                    <tr key={r.id} className="hover:bg-white/5 transition-colors group">
+                      <td className="px-8 py-5">
+                        <div className="font-bold text-white text-xs mb-1">{r.prevName}</div>
+                        {r.prevFileUrl ? (
+                          <a href={r.prevFileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[10px] text-accent-primary hover:text-white transition-colors">
+                            <Download className="w-3 h-3" /> Descargar CSV
+                          </a>
+                        ) : (
+                          <span className="text-[10px] text-text-muted">No hay archivo físico</span>
+                        )}
+                      </td>
+                      <td className="px-8 py-5">
+                        <div className="font-bold text-white text-xs mb-1">{r.actName}</div>
+                        {r.actFileUrl ? (
+                          <a href={r.actFileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[10px] text-status-teal hover:text-white transition-colors">
+                            <Download className="w-3 h-3" /> Descargar CSV
+                          </a>
+                        ) : (
+                          <span className="text-[10px] text-text-muted">No hay archivo físico</span>
+                        )}
+                      </td>
+                      <td className="px-8 py-5 text-text-soft font-mono text-[10px]">
+                        {r.userEmail || <span className="text-status-red">ID: {r.userId}</span> || 'Desconocido'}
+                      </td>
+                      <td className="px-8 py-5 font-mono text-text-muted text-[10px]">
+                        {r.createdAt?.toDate ? r.createdAt.toDate().toLocaleString() : 'Reciente'}
+                      </td>
+                      <td className="px-8 py-5 text-right">
+                        <button
+                          onClick={() => handleDeleteReport(r.id, r.refPath, r.prevFileUrl, r.actFileUrl)}
+                          disabled={isDeleting === r.id}
+                          className="inline-flex items-center justify-center p-2 rounded-lg bg-status-red/10 text-status-red hover:bg-status-red hover:text-white transition-colors disabled:opacity-50"
+                          title="Eliminar reporte y CSVs para liberar espacio"
+                        >
+                          {isDeleting === r.id ? (
+                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
+                        </button>
                       </td>
                     </tr>
                   ))
